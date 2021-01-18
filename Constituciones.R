@@ -1,7 +1,7 @@
 library(rvest)
 library(RSelenium)
 
-urls <- read.csv("../Constituciones/urls.csv", encoding = "utf-8")
+urls <- read.csv("urls.csv", encoding = "utf-8")
 
 extraer_texto <- function(x){
   
@@ -21,8 +21,27 @@ for (i in seq_along(urls$País)){
   
   p <- urls$País[i]
     
-  d <- texto_constituciones[[1]] %>% 
+  d <- texto_constituciones[[i]] %>% 
     mutate(pais = p, .before = value)
   
   datos_consolidado <- bind_rows(datos_consolidado, d)
+  
 }
+
+datos_consolidado <- datos_consolidado %>% 
+  group_by(pais) %>% 
+  slice(-1) %>% 
+  mutate(cap = ifelse(str_detect(value, "CAPÍTULO"), 1, 0),
+         sec = ifelse(str_detect(value, "SECCIÓN"), 1, 0),
+         tit = ifelse(str_detect(value, "TÍTULO"), 1, 0),
+         art = ifelse(str_detect(value, "Artículo"), 1, 0),
+         largo = ifelse(str_length(value)>14, 1, 0)
+  )
+
+datos_consolidado %>% 
+  filter(cap == 0, 
+         sec == 0,
+         tit == 0, 
+         art == 1,
+         largo == 0) %>% View
+  summarize(n = n())
