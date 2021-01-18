@@ -1,5 +1,6 @@
 library(rvest)
-library(RSelenium)
+library(tidyverse)
+library(stringi)
 
 urls <- read.csv("urls.csv", encoding = "utf-8")
 
@@ -42,6 +43,7 @@ datos_consolidado %>%
   filter(cap == 0, 
          sec == 0,
          tit == 0, 
-         art == 1,
-         largo == 0) %>% View
-  summarize(n = n())
+         art == 0,
+         largo == 1) %>% 
+  select(pais, texto = value) %>% 
+  write_excel_csv("comparacion_constituciones.csv")
